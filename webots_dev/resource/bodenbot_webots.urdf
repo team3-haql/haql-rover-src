@@ -1,0 +1,65 @@
+<?xml version="1.0" ?>
+<robot name="Bodenbot">
+    <webots>
+        <device reference="zed2i" type="RangeFinder">
+            <ros>
+                <topicName>/zed2i</topicName>
+                <enabled>true</enabled>
+                <updateRate>20</updateRate>
+                <frameName>Zed2i</frameName>
+            </ros>
+        </device>
+
+        <device reference="gps" type="GPS">
+            <ros>
+                <enabled>true</enabled>
+                <topicName>/gps</topicName>
+                <updateRate>50</updateRate>
+            </ros>
+        </device>
+
+        <plugin type="webots_ros2_driver::Ros2IMU">
+            <enabled>True</enabled>
+            <updateRate>50</updateRate>
+            <topicName>/imu</topicName>
+            <frameName>imu</frameName>
+            <inertialUnitName>imu</inertialUnitName>
+            <gyroName>gyro</gyroName>
+            <accelerometerName>accelerometer</accelerometerName>
+        </plugin>
+
+        <plugin type="webots_ros2_control::Ros2Control" />
+    </webots>
+
+    <ros2_control name="WebotsControl" type="system">
+        <hardware>
+            <plugin>webots_ros2_control::Ros2ControlSystem</plugin>
+        </hardware>
+
+        <joint name="left_wheel_1_link_joint">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+        <joint name="left_wheel_2_link_joint">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+        <joint name="left_wheel_3_link_joint">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+
+        <joint name="right_wheel_1_link_joint">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+        <joint name="right_wheel_2_link_joint">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+        <joint name="right_wheel_3_link_joint">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+    </ros2_control>
+</robot>

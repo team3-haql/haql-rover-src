@@ -1,0 +1,36 @@
+motor_driver:
+  ros__parameters:
+    update_rate: 20
+
+    wheel_separation: 0.75
+    wheel_radius: 0.13
+
+    left_wheels:
+    - front_left
+    - middle_left
+    - rear_left
+
+    right_wheels:
+    - front_right
+    - middle_right
+    - rear_right
+
+    front_left:
+      id: 0
+      reversed: false
+    middle_left:
+      id: 1
+      reversed: false
+    rear_left:
+      id: 2
+      reversed: false
+
+    front_right:
+      id: 3
+      reversed: false
+    middle_right:
+      id: 4
+      reversed: false
+    rear_right:
+      id: 5
+      reversed: false

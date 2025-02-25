@@ -1,0 +1,7 @@
+image_to_gridmap:
+  ros__parameters:
+    image_topic: "/image"
+    resolution: 0.054
+    map_frame_id: "map"
+    min_height: -0.02185828983783722
+    max_height: 5.7336273193359375

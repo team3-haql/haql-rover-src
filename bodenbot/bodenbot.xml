@@ -1,0 +1,9 @@
+<library path="bodenbot">
+  <class name="bodenbot/SerialController"
+         type="bodenbot::SerialController"
+         base_class_type="hardware_interface::SystemInterface">
+    <description>
+      Bodenbot serial controller with hardware interface-type.
+    </description>
+  </class>
+</library>

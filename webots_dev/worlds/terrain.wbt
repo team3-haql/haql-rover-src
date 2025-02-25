@@ -1,0 +1,211 @@
+#VRML_SIM R2023b utf8
+
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackground.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/backgrounds/protos/TexturedBackgroundLight.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/apartment_structure/protos/Wall.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/OsbWood.proto"
+EXTERNPROTO "../protos/Bodenbot.proto"
+EXTERNPROTO "../protos/Tools.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/shapes/protos/TexturedBoxShape.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/vehicles/protos/generic/Truck.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/objects/floors/protos/UnevenTerrain.proto"
+EXTERNPROTO "https://raw.githubusercontent.com/cyberbotics/webots/R2023b/projects/appearances/protos/DryMud.proto"
+
+WorldInfo {
+  title "Terrain"
+  basicTimeStep 20
+  contactProperties [
+    ContactProperties {
+      material2 "rubber"
+      coulombFriction [
+        0.6
+      ]
+      maxContactJoints 12
+    }
+  ]
+}
+Viewpoint {
+  orientation 0.3644499692893855 -0.44252301276809203 -0.819359263727223 4.737847526463775
+  position -19.055760964982134 -93.65633616639798 92.46928584360295
+  followType "None"
+}
+TexturedBackground {
+}
+TexturedBackgroundLight {
+}
+Bodenbot {
+  translation -0.05 -4.48 0.65
+  rotation 0 0 1 3.14159
+  controller "<extern>"
+  toolSlot [
+    Tools {
+      rotation 0 1 0 0
+    }
+  ]
+}
+Solid {
+  children [
+    Shape {
+      appearance Appearance {
+        material Material {
+          shininess 0
+        }
+        texture ImageTexture {
+          url [
+            "../resource/hillshade-painted.jpg"
+          ]
+        }
+      }
+      geometry DEF TERRAIN_MESH Mesh {
+        url [
+          "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/terrain.dae"
+        ]
+      }
+      castShadows FALSE
+    }
+  ]
+  name "Terrain"
+  boundingObject USE TERRAIN_MESH
+  locked TRUE
+}
+Solid {
+  translation 0 -4.43 0.37
+  children [
+    Solid {
+      translation -0.69 0 0.47
+      children [
+        TexturedBoxShape {
+          size 0.1 0.3 0.3
+          textureUrl [
+            "../resource/tag41_12_00000.jpeg"
+          ]
+          textureFiltering 0
+          backFace FALSE
+          leftFace FALSE
+          rightFace FALSE
+          topFace FALSE
+          bottomFace FALSE
+        }
+      ]
+    }
+    Wall {
+      translation -0.0665105 0.544607 0.04
+      rotation 0 0 -1 1.57079
+      name "wall(24)"
+      size 0.2 1.5 0.7
+      appearance OsbWood {
+      }
+    }
+    Wall {
+      translation -0.0665013 -0.595393 0.04
+      rotation 0 0 -1 1.57079
+      name "wall(25)"
+      size 0.2 1.5 0.7
+      appearance OsbWood {
+      }
+    }
+    Wall {
+      translation -0.796501 -0.025393 0.04
+      rotation 0 0 1 -3.1415853071795863
+      name "wall(26)"
+      size 0.2 1.5 0.7
+      appearance OsbWood {
+      }
+    }
+  ]
+  name "Dog House"
+}
+Truck {
+  translation -18.19 0.900661 0.91
+  rotation 0 0 1 0.523599
+  controller "<none>"
+}
+UnevenTerrain {
+  translation -7.42 0 -0.28
+  size 10 10 3
+  xDimension 20
+  yDimension 20
+  appearance DEF Mud_Pile DryMud {
+    textureTransform TextureTransform {
+      scale 10 10
+    }
+  }
+  flatBounds TRUE
+  perlinNOctaves 6
+}
+UnevenTerrain {
+  translation -17.38 12.36 -0.28
+  name "uneven terrain(1)"
+  size 10 10 3
+  xDimension 20
+  yDimension 20
+  appearance USE Mud_Pile
+  flatBounds TRUE
+  perlinNOctaves 6
+}
+UnevenTerrain {
+  translation -1.82 15.2 -0.28
+  rotation 0 1 0 4.692820414042842e-06
+  name "uneven terrain(2)"
+  size 10 10 3
+  xDimension 20
+  yDimension 20
+  appearance USE Mud_Pile
+  flatBounds TRUE
+  perlinNOctaves 6
+}
+UnevenTerrain {
+  translation 51.06 1.07 0.439786
+  rotation 0 1 0 4.692820414042842e-06
+  name "uneven terrain(6)"
+  size 10 10 3
+  xDimension 20
+  yDimension 20
+  appearance USE Mud_Pile
+  flatBounds TRUE
+  perlinNOctaves 6
+}
+UnevenTerrain {
+  translation -33.11 -9.22 -2.1198
+  rotation 0 1 0 4.692820414042842e-06
+  name "uneven terrain(3)"
+  size 6 6 3
+  xDimension 20
+  yDimension 20
+  appearance USE Mud_Pile
+  flatBounds TRUE
+  perlinNOctaves 6
+}
+UnevenTerrain {
+  translation 36.69 -35.83 -1.97983
+  rotation 0 1 0 4.692820414042842e-06
+  name "uneven terrain(7)"
+  size 6 6 3
+  xDimension 20
+  yDimension 20
+  appearance USE Mud_Pile
+  flatBounds TRUE
+  perlinNOctaves 6
+}
+UnevenTerrain {
+  translation -44.2875 -20.3976 -2.1198
+  rotation 2.3464099999558937e-06 5.664739999893518e-06 0.9999999999812026 0.785398
+  name "uneven terrain(4)"
+  size 6 6 3
+  xDimension 20
+  yDimension 20
+  appearance USE Mud_Pile
+  flatBounds TRUE
+  perlinNOctaves 6
+}
+UnevenTerrain {
+  translation -67.9238 -38.0411 -2.7798
+  rotation 2.3464099999558937e-06 5.664739999893518e-06 0.9999999999812026 0.785398
+  name "uneven terrain(5)"
+  size 6 6 3
+  xDimension 20
+  yDimension 20
+  appearance USE Mud_Pile
+  flatBounds TRUE
+  perlinNOctaves 6
+}

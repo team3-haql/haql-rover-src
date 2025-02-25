@@ -1,0 +1,590 @@
+#VRML_SIM R2023b utf8
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# This is a proto file for Webots for the Bodenbot
+# Extracted from: /Users/deweykai/repos/ws_dev/src/haql-rover/boden_description/urdf/boden_description_relpath.urdf
+
+PROTO Bodenbot [
+  field  SFVec3f     translation     0 0 0
+  field  SFRotation  rotation        0 0 1 0
+  field  SFString    name            "Bodenbot"  # Is `Robot.name`.
+  field  SFString    controller      "void"      # Is `Robot.controller`.
+  field  MFString    controllerArgs  []          # Is `Robot.controllerArgs`.
+  field  SFString    customData      ""          # Is `Robot.customData`.
+  field  SFBool      supervisor      FALSE       # Is `Robot.supervisor`.
+  field  SFBool      synchronization TRUE        # Is `Robot.synchronization`.
+  field  SFBool      selfCollision   FALSE       # Is `Robot.selfCollision`.
+  field  MFNode      toolSlot        []          # Extend the robot with new nodes at the end of the arm.
+]
+{
+  Robot {
+    translation IS translation
+    rotation IS rotation
+    controller IS controller
+    controllerArgs IS controllerArgs
+    customData IS customData
+    supervisor IS supervisor
+    synchronization IS synchronization
+    selfCollision IS selfCollision
+    children [
+      Pose {
+        translation -0.040780 -0.002140 0.006740
+        rotation 0.000001 -0.707108 -0.707105 3.141591
+        children [
+          DEF main-plate_visual CadShape {
+            url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/main-plate.dae"
+          }
+        ]
+      }
+      Solid {
+        translation -0.092860 -0.002140 0.056270
+        rotation 0.000000 0.000000 -1.000000 3.141590
+        children [
+          Pose {
+            rotation 1.000000 0.000000 0.000000 1.570800
+            children [
+              DEF battery_visual CadShape {
+                url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/battery.dae"
+              }
+            ]
+          }
+        ]
+        name "battery_link"
+        physics Physics {
+          density -1
+          mass 8.000000
+          centerOfMass [ 0.000000 0.000000 0.001440 ]
+          inertiaMatrix [
+            4.617000e-02 4.395000e-02 3.884000e-02
+            0.000000e+00 3.000000e-05 4.000000e-05
+          ]
+        }
+      }
+      Solid {
+        translation 0.045140 0.002990 0.106980
+        rotation 0.000000 0.000000 -1.000000 3.141590
+        children [
+          Pose {
+            rotation 1.000000 0.000000 0.000000 1.570800
+            children [
+              DEF electronics_visual CadShape {
+                url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/electronics.dae"
+              }
+            ]
+          }
+          Solid {
+            translation -0.084200 0.008940 0.082990
+            rotation -0.003410 0.000000 0.999994 3.141590
+            children [
+              Pose {
+                rotation 0.000001 0.707108 0.707105 3.141591
+                children [
+                  DEF Zed2i_visual CadShape {
+                    url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/Zed2i.dae"
+                  }
+                ]
+              }
+              Group {
+                children IS toolSlot
+              }
+            ]
+            name "Zed2i_link"
+            physics Physics {
+              density -1
+              mass 0.200000
+              centerOfMass [ 0.003780 0.001060 -0.005640 ]
+              inertiaMatrix [
+                4.800000e-04 4.000000e-05 5.000000e-04
+                0.000000e+00 0.000000e+00 0.000000e+00
+              ]
+            }
+          }
+        ]
+        name "electronics_link"
+        physics Physics {
+          density -1
+          mass 0.500000
+          centerOfMass [ -0.011920 0.002250 0.005950 ]
+          inertiaMatrix [
+            6.230000e-03 3.080000e-03 4.500000e-03
+            1.000000e-04 3.800000e-04 -1.100000e-04
+          ]
+        }
+      }
+      Solid {
+        translation 0.038920 0.000220 -0.020710
+        rotation -0.000001 1.000000 -0.000001 3.141593
+        children [
+          Pose {
+            rotation -1.000000 0.000000 0.000000 1.570800
+            children [
+              DEF sensor-package_visual CadShape {
+                url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/sensor-package.dae"
+              }
+            ]
+          }
+        ]
+        name "sensor_package_link"
+        physics Physics {
+          density -1
+          mass 0.300000
+          centerOfMass [ 0.002470 0.000360 0.019190 ]
+          inertiaMatrix [
+            1.290000e-03 5.200000e-04 1.540000e-03
+            0.000000e+00 1.000000e-05 1.000000e-05
+          ]
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis -0.000003 1.000000 -0.000004
+          anchor -0.045780 0.162950 0.095490
+        }
+        device [
+          RotationalMotor {
+            name "suspension_main_link_joint::left"
+            maxVelocity 0.015
+            minPosition -0.5
+            maxPosition 0.5
+            maxTorque 1000
+            multiplier -1
+          }
+          PositionSensor {
+            name "suspension_left_main_link_joint_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation -0.045780 0.162950 0.095490
+          rotation 0.000001 -0.707108 -0.707105 3.141591
+          children [
+            Pose {
+              rotation 1.000000 0.000000 0.000000 3.141590
+              children [
+                DEF suspension-left_visual CadShape {
+                  url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/suspension-left.dae"
+                }
+              ]
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 0.000000 0.000000 1.000000
+                anchor -0.295120 -0.209320 0.090710
+              }
+              device [
+                RotationalMotor {
+                  name "left_wheel_1_link_joint"
+                  maxVelocity 10.0
+                  maxTorque 1000.0
+                }
+                PositionSensor {
+                  name "left_wheel_1_link_joint_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation -0.295120 -0.209320 0.090710
+                rotation 0.000000 0.000000 1.000000 2.050760
+                children [
+                  DEF wheel-left_visual CadShape {
+                    url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/wheel-left.dae"
+                  }
+                ]
+                name "left_wheel_1_link"
+                contactMaterial "rubber"
+                boundingObject Pose {
+                  translation -0.000060 -0.000020 0.066220
+                  children [
+                    Cylinder {
+                      radius 0.13329
+                      height 0.10744
+                    }
+                  ]
+                }
+                physics Physics {
+                  density -1
+                  mass 0.300000
+                  centerOfMass [ -0.000060 -0.000020 0.066220 ]
+                  inertiaMatrix [
+                    1.620000e-03 2.670000e-03 1.620000e-03
+                    0.000000e+00 0.000000e+00 0.000000e+00
+                  ]
+                }
+              }
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 0.000000 0.000000 1.000000
+                anchor 0.220470 -0.072180 0.064340
+              }
+              device [
+                RotationalMotor {
+                  name "suspension_left_sub_link_joint"
+                  maxVelocity 0.015
+                  minPosition -0.5
+                  maxPosition 0.5
+                  maxTorque 10
+                }
+                PositionSensor {
+                  name "suspension_left_sub_link_joint_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation 0.220470 -0.072180 0.064340
+                rotation 0.000000 0.000000 -1.000000 0.269660
+                children [
+                  Pose {
+                    rotation 1.000000 -0.000000 0.000000 3.141590
+                    children [
+                      DEF suspension-left-sub_visual CadShape {
+                        url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/suspension-left-sub.dae"
+                      }
+                    ]
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis 0.000000 0.000000 1.000000
+                      anchor -0.120320 -0.189080 0.026380
+                    }
+                    device [
+                      RotationalMotor {
+                        name "left_wheel_2_link_joint"
+                        maxVelocity 10.0
+                        maxTorque 1000.0
+                      }
+                      PositionSensor {
+                        name "left_wheel_2_link_joint_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation -0.120320 -0.189080 0.026380
+                      rotation 0.000000 0.000000 1.000000 2.346610
+                      children [
+                        USE wheel-left_visual
+                      ]
+                      name "left_wheel_2_link"
+                      contactMaterial "rubber"
+                      boundingObject Pose {
+                        translation -0.000060 -0.000020 0.066220
+                        children [
+                          Cylinder {
+                            radius 0.13329
+                            height 0.10744
+                          }
+                        ]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.300000
+                        centerOfMass [ -0.000060 -0.000020 0.066220 ]
+                        inertiaMatrix [
+                          1.620000e-03 2.670000e-03 1.620000e-03
+                          0.000000e+00 0.000000e+00 0.000000e+00
+                        ]
+                      }
+                    }
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis 0.000000 0.000000 1.000000
+                      anchor 0.178660 -0.065370 0.026380
+                    }
+                    device [
+                      RotationalMotor {
+                        name "left_wheel_3_link_joint"
+                        maxVelocity 10.0
+                        maxTorque 1000.0
+                      }
+                      PositionSensor {
+                        name "left_wheel_3_link_joint_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation 0.178660 -0.065370 0.026380
+                      rotation 0.000000 0.000000 1.000000 0.269660
+                      children [
+                        USE wheel-left_visual
+                      ]
+                      name "left_wheel_3_link"
+                      contactMaterial "rubber"
+                      boundingObject Pose {
+                        translation 0.000040 0.000050 0.066220
+                        rotation -1.000000 0.000000 0.000000 3.141590
+                        children [
+                          Cylinder {
+                            radius 0.13329
+                            height 0.10744
+                          }
+                        ]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.300000
+                        centerOfMass [ 0.000040 0.000050 0.066220 ]
+                        inertiaMatrix [
+                          1.620000e-03 2.670000e-03 1.620000e-03
+                          0.000000e+00 0.000000e+00 0.000000e+00
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "suspension_left_sub_link"
+                physics Physics {
+                  density -1
+                  mass 2.500000
+                  centerOfMass [ 0.018680 -0.091250 0.012010 ]
+                  inertiaMatrix [
+                    1.321000e-02 4.851000e-02 3.744000e-02
+                    5.800000e-04 -1.620000e-03 -2.010000e-03
+                  ]
+                }
+              }
+            }
+          ]
+          name "suspension_left_main_link"
+          physics Physics {
+            density -1
+            mass 2.000000
+            centerOfMass [ -0.143940 -0.116600 0.072020 ]
+            inertiaMatrix [
+              3.839000e-02 1.163000e-01 7.964000e-02
+              -5.210000e-03 -5.264000e-02 -3.620000e-03
+            ]
+          }
+        }
+      }
+      HingeJoint {
+        jointParameters HingeJointParameters {
+          axis 0.000000 -1.000000 -0.000004
+          anchor -0.045870 -0.167240 0.095820
+        }
+        device [
+          RotationalMotor {
+            name "suspension_main_link_joint::right"
+            maxVelocity 0.015
+            minPosition -0.5
+            maxPosition 0.5
+            maxTorque 1.5
+          }
+          PositionSensor {
+            name "suspension_right_main_link_joint_sensor"
+          }
+        ]
+        endPoint Solid {
+          translation -0.045870 -0.167240 0.095820
+          rotation 1.000000 -0.000000 0.000000 1.570800
+          children [
+            DEF suspension-right_visual CadShape {
+              url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/suspension-right.dae"
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 0.000000 -0.000000 -1.000000
+                anchor 0.295120 -0.209320 0.090710
+              }
+              device [
+                RotationalMotor {
+                  name "right_wheel_3_link_joint"
+                  maxVelocity 10.0
+                  maxTorque 1000.0
+                }
+                PositionSensor {
+                  name "right_wheel_3_joint_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation 0.295120 -0.209320 0.090710
+                rotation 0.000000 0.000000 -1.000000 2.050760
+                children [
+                  Pose {
+                    rotation -1.000000 -0.000000 0.000000 3.141590
+                    children [
+                      DEF wheel-right_visual CadShape {
+                        url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/wheel-right.dae"
+                      }
+                    ]
+                  }
+                ]
+                name "right_wheel_3_link"
+                contactMaterial "rubber"
+                boundingObject Pose {
+                  translation 0.000010 0.000000 0.066220
+                  rotation -1.000000 -0.000000 0.000000 3.141590
+                  children [
+                    Cylinder {
+                      radius 0.13335
+                      height 0.10744
+                    }
+                  ]
+                }
+                physics Physics {
+                  density -1
+                  mass 0.300000
+                  centerOfMass [ 0.000010 0.000000 0.066220 ]
+                  inertiaMatrix [
+                    1.620000e-03 2.670000e-03 1.620000e-03
+                    0.000000e+00 0.000000e+00 0.000000e+00
+                  ]
+                }
+              }
+            }
+            HingeJoint {
+              jointParameters HingeJointParameters {
+                axis 0.000000 0.000000 1.000000
+                anchor -0.220470 -0.072180 0.064340
+              }
+              device [
+                RotationalMotor {
+                  name "suspension_right_sub_link_joint"
+                  maxVelocity 0.015
+                  minPosition -0.5
+                  maxPosition 0.5
+                  maxTorque 10
+                }
+                PositionSensor {
+                  name "suspension_right_sub_link_joint_sensor"
+                }
+              ]
+              endPoint Solid {
+                translation -0.220470 -0.072180 0.064340
+                rotation -0.000000 0.000000 1.000000 0.269660
+                children [
+                  DEF suspension-right-sub_visual CadShape {
+                    url "https://raw.githubusercontent.com/team19-haql/haql-rover/main/webots_dev/meshes/dae/suspension-right-sub.dae"
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis 0.000000 -0.000000 -1.000000
+                      anchor 0.120320 -0.189080 0.026380
+                    }
+                    device [
+                      RotationalMotor {
+                        name "right_wheel_1_link_joint"
+                        maxVelocity 10.0
+                        maxTorque 1000.0
+                      }
+                      PositionSensor {
+                        name "right_wheel_1_link_joint_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation 0.120320 -0.189080 0.026380
+                      rotation 0.000000 0.000000 -1.000000 2.346610
+                      children [
+                        Pose {
+                          rotation -1.000000 -0.000000 0.000000 3.141590
+                          children [
+                            USE wheel-right_visual
+                          ]
+                        }
+                      ]
+                      name "right_wheel_1_link"
+                      contactMaterial "rubber"
+                      boundingObject Pose {
+                        translation 0.000060 -0.000020 0.066220
+                        rotation -1.000000 -0.000000 0.000000 3.141590
+                        children [
+                          Cylinder {
+                            radius 0.13329
+                            height 0.10744
+                          }
+                        ]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.300000
+                        centerOfMass [ 0.000060 -0.000020 0.066220 ]
+                        inertiaMatrix [
+                          1.620000e-03 2.670000e-03 1.620000e-03
+                          0.000000e+00 0.000000e+00 0.000000e+00
+                        ]
+                      }
+                    }
+                  }
+                  HingeJoint {
+                    jointParameters HingeJointParameters {
+                      axis 0.000000 0.000000 -1.000000
+                      anchor -0.178660 -0.065370 0.026380
+                    }
+                    device [
+                      RotationalMotor {
+                        name "right_wheel_2_link_joint"
+                        maxVelocity 10.0
+                        maxTorque 1000.0
+                      }
+                      PositionSensor {
+                        name "right_wheel_2_link_joint_sensor"
+                      }
+                    ]
+                    endPoint Solid {
+                      translation -0.178660 -0.065370 0.026380
+                      rotation 0.000000 0.000000 1.000000 2.191250
+                      children [
+                        Pose {
+                          rotation 1.000000 0.000000 0.000000 3.141590
+                          children [
+                            USE wheel-right_visual
+                          ]
+                        }
+                      ]
+                      name "right_wheel_2_link"
+                      contactMaterial "rubber"
+                      boundingObject Pose {
+                        translation 0.000060 -0.000020 0.066220
+                        rotation 1.000000 0.000000 0.000000 3.141590
+                        children [
+                          Cylinder {
+                            radius 0.13329
+                            height 0.10744
+                          }
+                        ]
+                      }
+                      physics Physics {
+                        density -1
+                        mass 0.300000
+                        centerOfMass [ 0.000060 -0.000020 0.066220 ]
+                        inertiaMatrix [
+                          1.620000e-03 2.670000e-03 1.620000e-03
+                          0.000000e+00 0.000000e+00 0.000000e+00
+                        ]
+                      }
+                    }
+                  }
+                ]
+                name "suspension_right_sub_link"
+                physics Physics {
+                  density -1
+                  mass 2.500000
+                  centerOfMass [ -0.018680 -0.091250 0.012010 ]
+                  inertiaMatrix [
+                    1.321000e-02 4.851000e-02 3.744000e-02
+                    -5.800000e-04 -1.620000e-03 2.010000e-03
+                  ]
+                }
+              }
+            }
+          ]
+          name "suspension_right_main_link"
+          physics Physics {
+            density -1
+            mass 2.000000
+            centerOfMass [ 0.143940 -0.116600 0.072020 ]
+            inertiaMatrix [
+              3.839000e-02 1.163000e-01 7.964000e-02
+              5.210000e-03 -5.264000e-02 3.620000e-03
+            ]
+          }
+        }
+      }
+    ]
+    name IS name
+    physics Physics {
+      density -1
+      mass 2.000000
+      centerOfMass [ -0.039280 0.000000 -0.009040 ]
+      inertiaMatrix [
+        1.000000e-03 1.000000e-03 1.000000e-03
+        0.000000e+00 0.000000e+00 0.000000e+00
+      ]
+    }
+  }
+}

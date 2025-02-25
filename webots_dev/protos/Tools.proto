@@ -1,0 +1,85 @@
+#VRML_SIM R2023b utf8
+# license: Copyright Cyberbotics Ltd. Licensed for use only with Webots.
+# license: Apache License 2.0
+# license url: http://www.apache.org/licenses/LICENSE-2.0
+# This is a proto file for Webots for the Bodenbot tools
+# template language: javascript
+
+PROTO Tools [
+  field SFVec3f    translation   0 0 0
+  field SFRotation rotation      0 1 0 -3.14159
+  field SFString   name          "Tools"
+  field SFInt32    width         564          # Defines the `width` field of the `RangeFinder` and `Camera` nodes.
+  field SFInt32    height        360          # Defines the `height` field of the `RangeFinder` and `Camera` nodes.
+  field SFFloat    maxRange      15.0         # Defines the `maxRange` field of the `RangeFinder`.
+  field SFFloat    colorNoise    0.0          # Defines the `noise` field of the `Camera`.
+  field SFFloat    rangeNoise    0.0          # Defines the `noise` field of the `RangeFinder`.
+  field SFString   cameraName    "zed2i"     # Defines the name of the `RangeFinder` and `Camera` nodes. The `RangeFinder` is named "`cameraName` + ' range'" and the `Camera`: "`cameraName` + ' color'".
+]
+
+{
+  Solid {
+    translation IS translation
+    rotation IS rotation
+    children [
+      Camera {
+        translation 0.0 0.0 -0.0127
+        # rotation 0.577351 -0.577351 -0.577351 -2.09439
+        name %<= '"' + fields.cameraName.value + '_color"' >%
+        fieldOfView 1.91986
+        width IS width
+        height IS height
+        noise IS colorNoise
+      }
+      RangeFinder {
+        translation 0.0 0.0 -0.0127
+        # rotation 0.577351 -0.577351 -0.577351 -2.09439
+        name %<= '"' + fields.cameraName.value + '_range"' >%
+        fieldOfView 1.91986
+        width IS width
+        height IS height
+        maxRange IS maxRange
+        noise IS rangeNoise
+      }
+      Accelerometer {
+        name "accelerometer"
+        lookupTable [ -200 -200 0.004, 200 200 0.004 ]
+      }
+      Gyro {
+        name "gyro"
+        lookupTable [ -20 -20 0.0001, 20 20 0.0001 ]
+      }
+      Compass {
+        name "compass"
+        lookupTable [ -1 -1 0.001, 1 1 0.001 ]
+      }
+      InertialUnit {
+        name "imu"
+        resolution 0.001
+        noise 0.001
+      }
+      GPS {
+        name "gps"
+        type "satellite"
+        # accuracy 0.03
+        # resolution 0.05
+        # speedNoise 0.02
+        # speedResolution 0.10
+      }
+    ]
+    name IS name
+    boundingObject Pose {
+      # rotation -0.5774 0.5773 0.5774 -2.0944
+      translation 0 0 0.013
+      children [
+        Box {
+          size 0.024 0.168 0.027
+        }
+      ]
+    }
+    physics Physics {
+      density -1
+      mass 0.2
+    }
+  }
+}

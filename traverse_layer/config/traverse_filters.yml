@@ -1,0 +1,185 @@
+pointcloud_to_gridmap:
+  ros__parameters:
+    input_topic: /zed2i/range/point_cloud # pointcloud2
+    output_topic: /grid_map # gridmap
+    map_frame_id: map
+    center_frame_id: base_link
+    publish_latency: true
+
+    resolution: 0.05 # m/cell
+    world_size:
+      # 7.5 meters ahead is plenty
+      length: 10.0
+      width: 10.0
+
+    publish_rate: 2.0 # Hz
+
+    visibility_cleanup:
+      enabled: true
+      rate: 1.0
+
+traverse_layer:
+  ros__parameters:
+    input_topic: /grid_map
+    local_map_topic: /local_map
+    global_map_topic: /global_map
+
+    publish_latency: true
+
+    map:
+      map_frame_id: map
+      local_length: 10.0
+      movement_update_threshold: 5.0
+      resolution: 0.05
+
+    global_map:
+      publish_length: 50.0
+      downscaled_resolution: 0.20
+
+    costmap:
+      enabled: false
+      topic: /costmap
+      layer: traversability
+      min: 0.0
+      max: 1.0
+
+    filters:
+      filter1: # 10 ms
+        name: buffer_normalizer
+        type: gridMapFilters/BufferNormalizerFilter
+
+      # filter2:  # Fill holes in the map with inpainting. # 50ms
+      #   name: inpaint
+      #   type: gridMapCv/InpaintFilter
+      #   params:
+      #     input_layer: elevation
+      #     output_layer: elevation_inpainted
+      #     radius: 0.15
+
+      # filter3:  # Reduce noise with a radial blurring filter. # 400ms
+      #   name: mean_in_radius
+      #   type: gridMapFilters/MeanInRadiusFilter
+      #   params:
+      #     input_layer: elevation_inpainted
+      #     output_layer: elevation_smooth
+      #     radius: 0.16
+
+      filter2: # Boxblur as an alternative to the inpaint and radial blurring filter above. # 170ms
+        name: boxblur
+        type: gridMapFilters/SlidingWindowMathExpressionFilter
+        params:
+          input_layer: elevation
+          output_layer: elevation_smooth
+          expression: meanOfFinites(elevation)
+          compute_empty_cells: true
+          edge_handling: crop # options: inside, crop, empty, mean
+          window_length: 0.1 # optional
+
+      filter3: # Compute surface normals. # 10ms
+        name: surface_normals
+        type: gridMapFilters/NormalVectorsFilter
+        params:
+          algorithm: area # raster is much faster than area method
+          input_layer: elevation_smooth
+          parallelization_enabled: true
+          output_layers_prefix: normal_vectors_
+          radius: 0.166 # d = 0.33
+          normal_vector_positive_axis: z
+
+      filter4: # Add a color layer for visualization based on the surface normal. # 10ms
+        name: normal_color_map
+        type: gridMapFilters/NormalColorMapFilter
+        params:
+          input_layers_prefix: normal_vectors_
+          output_layer: normal_color
+
+      filter5: # Compute slope from surface normal.
+        name: slope
+        type: gridMapFilters/MathExpressionFilter
+        params:
+          output_layer: slope
+          expression: acos(normal_vectors_z)
+
+      filter6: # Compute slope from surface normal.
+        name: slope_min
+        type: gridMapFilters/MinInRadiusFilter
+        params:
+          input_layer: slope
+          output_layer: slope_min
+          radius: 0.166 # d = 0.33
+
+      filter7: # calculate traversability from slope
+        name: traversability_slope
+        type: gridMapFilters/MathExpressionFilter
+        params:
+          output_layer: traversability_slope
+          # [a, b] -> 0, 1 : (v-a) / (b-a)
+          # critial 25 degree is 0.436332 rad
+          # safe 5 degree is 0.0872665 rad
+          expression: (slope_min - 0.0872665) / 0.3490655 # 10-25 degrees
+
+      filter8:
+        name: local_val
+        type: gridMapFilters/MinInRadiusFilter
+        params:
+          input_layer: elevation_smooth
+          output_layer: local_val
+          radius: 0.166 # d = 0.33
+
+      filter9:
+        name: stepsize
+        type: gridMapFilters/MathExpressionFilter
+        params:
+          output_layer: stepsize
+          expression: elevation_smooth - local_val
+
+      filter10: # calculate traversability from stepsize
+        name: traversability_stepsize
+        type: gridMapFilters/MathExpressionFilter
+        params:
+          output_layer: traversability_stepsize
+          # [a, b] -> 0, 1 : (v-a) / (b-a)
+          # critial degree step height is 0.20 m
+          # safe step height is below 0.05 m
+          expression: (stepsize - 0.05) / 0.15 # 13 cm
+
+      filter11: # Compute traversability as normalized weighted sum of slope and roughness.
+        name: traversability
+        type: gridMapFilters/MathExpressionFilter
+        params:
+          output_layer: traversability_raw
+          expression: cwiseMax(traversability_slope, traversability_stepsize) #, 0.7 * traversability_slope + 0.3 traversability_stepsize)
+
+      filter12: # Set lower threshold on traversability.
+        name: traversability_lower_threshold
+        type: gridMapFilters/ThresholdFilter
+        params:
+          layer: traversability_raw
+          lower_threshold: 0.0
+          set_to: 0.0
+
+      filter13: # Set upper threshold on traversability.
+        name: traversability_upper_threshold
+        type: gridMapFilters/ThresholdFilter
+        params:
+          layer: traversability_raw
+          upper_threshold: 1.0
+          set_to: 1.0 # Other uses: .nan, .inf
+
+      filter14: # Limit values that are not blurred
+        name: traversability_valid
+        type: gridMapFilters/MathExpressionFilter
+        params:
+          output_layer: traversability
+          expression: (elevation * 0) + traversability_raw
+
+      filter15: # max over 3x3 area to avoid data loss due to resizing
+        name: max_pass
+        type: gridMapFilters/SlidingWindowMathExpressionFilter
+        params:
+          input_layer: traversability
+          output_layer: traversability
+          expression: maxOfFinites(traversability)
+          compute_empty_cells: true
+          edge_handling: crop # options: inside, crop, empty, mean
+          window_size: 3

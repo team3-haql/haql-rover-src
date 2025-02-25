@@ -1,0 +1,66 @@
+<?xml version="1.0" ?>
+<robot name="Sojourner">
+    <webots>
+        <device reference="kinect" type="RangeFinder">
+            <ros>
+                <topicName>/camera</topicName>
+                <enabled>true</enabled>
+                <updateRate>10</updateRate>
+                <frameName>Kinect</frameName>
+            </ros>
+        </device>
+
+        <device reference="gps" type="GPS">
+            <ros>
+                <enabled>True</enabled>
+                <topicName>/gps</topicName>
+                <updateRate>10</updateRate>
+            </ros>
+        </device>
+
+        <plugin type="webots_ros2_driver::Ros2IMU">
+            <enabled>True</enabled>
+            <updateRate>50</updateRate>
+            <topicName>/imu</topicName>
+            <frameName>imu</frameName>
+            <inertialUnitName>imu inertial_unit</inertialUnitName>
+            <gyroName>imu gyro</gyroName>
+            <accelerometerName>imu accelerometer</accelerometerName>
+        </plugin>
+
+        <plugin type="webots_ros2_control::Ros2Control" />
+    </webots>
+
+    <ros2_control name="WebotsControl" type="system">
+        <hardware>
+            <plugin>webots_ros2_control::Ros2ControlSystem</plugin>
+        </hardware>
+
+        <joint name="BackLeftWheel">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+        <joint name="BackRightWheel">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+
+        <joint name="MiddleLeftWheel">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+        <joint name="MiddleRightWheel">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+
+        <joint name="FrontLeftWheel">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+        <joint name="FrontRightWheel">
+            <state_interface name="position"/>
+            <command_interface name="velocity"/>
+        </joint>
+    </ros2_control>
+</robot>
