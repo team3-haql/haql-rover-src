@@ -21,6 +21,7 @@
 #include <memory>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 #include <vector>
 
 #include "hardware_interface/types/hardware_interface_type_values.hpp"
@@ -40,141 +41,63 @@ extern "C" {
 ////////////////////////////////////////////////
 
 namespace bodenbot {
-class SerialInterface {
+
+class ServoInterface {
 public:
-	/**
-	 * Creates serial interface, immediately connects to device.
-	 * 
-	 * \param[in] device Path to driver
-	 * \param[in] address Where to write/read data in driver
-	 */
-	SerialInterface(std::string device, int address) {
-		address_ = address;
-
-    	if ((fd_ = open(device.c_str(), O_RDWR)) < 0) {
-      		throw std::runtime_error("Failed to open the i2c bus");
-    	} 
-    	RCLCPP_INFO(rclcpp::get_logger("SerialController"),
-                	"Opening I2C bus %s [%x]", device.c_str(), address);
-  	} 
-
-	/**
-	 * Writes velocity to driver.
-	 * 
-	 * \param[in] id Represents the motor id (Most likely used by arduino to manipute motors)
-	 * \param[in] velocity velocity to write in driver
-	 */
-  	void write_vel(int id, double velocity) {
-		// https://man7.org/linux/man-pages/man2/ioctl.2.html
-		// https://en.wikipedia.org/wiki/Ioctl
-		// ioctl modifies irregular device files
-		// I2C_SLAVE changes the devices address that we interact with.
-		// Needed for read/write operations
-    	if (ioctl(fd_, I2C_SLAVE, address_) < 0) {
-      		throw std::runtime_error(
-         	 	"Failed to acquire bus access and/or talk to slave."
-			);
-    	}
-
-		// Transforms id into byte to send.
-		// Transforms double velocity into float, and into byte stream which can be sent to device.
-    	float vel = velocity;
-    	unsigned char send[1] = {(unsigned char)id};
-    	unsigned char *buffer = (unsigned char *)&vel;
-
-		// https://docs.rtems.org/doxygen/branches/master/structi2c__msg.html#a8633f67b7fb7d6e4b4389d8a5b999e5f
-		// ^ i2c_msg flags
-		// This msg uses no flags
-    	struct i2c_msg msgs[2] = {
-        	{
-            	.addr = (unsigned char)address_,
-            	.flags = 0,
-            	.len = 1,
-            	.buf = send,
-        	},
-        	{
-            	.addr = (unsigned char)address_,
-            	.flags = 0,
-            	.len = 4, // Length of float
-            	.buf = buffer,
-        	},
-    	};
-
-		// Clumps messages together
-    	struct i2c_rdwr_ioctl_data data {
-      		.msgs = msgs, 
-			.nmsgs = 2, // Two messages
-    	};
-		// Sends data to device
-    	int res = ioctl(fd_, I2C_RDWR, &data);
-
-    	if (res < 0) {
-      		throw std::runtime_error("Failed to write to the i2c bus");
-    	}
-  	}
-
-	/**
-	 * Used to get velocity that is currently in driver
-	 * \param[in] id Represents the motor id (Most likely used by arduino to manipute motors)
-	 * \return Velocity found in driver
-	 */
-  	double read_vel(int id) {
-		// Select address to write to
-    	if (ioctl(fd_, I2C_SLAVE, address_) < 0) {
-      		throw std::runtime_error(
-          		"Failed to acquire bus access and/or talk to slave."
-			);
-    	}
-
-		// Construct messages to send
-    	unsigned char send[1] = {(unsigned char)id};
-    	unsigned char buffer[4];
-
-    	struct i2c_msg msgs[2] = {
-        	{
-            	.addr = (unsigned char)address_,
-            	.flags = 0,
-            	.len = 1,
-            	.buf = send,
-        	},
-        	{
-            	.addr = (unsigned char)address_,
-            	.flags = I2C_M_RD,
-            	.len = 4,
-            	.buf = buffer,
-        	},
-    	};
-
-   		struct i2c_rdwr_ioctl_data data {
-      		.msgs = msgs, 
-			.nmsgs = 2,
-    	};
-		// Send data to device
-    	int res = ioctl(fd_, I2C_RDWR, &data);
-    	float vel = *((float *)buffer);
-
-    	if (res < 0) {
-      		throw std::runtime_error("Failed to read from the i2c bus");
-    	}
-    	return vel;
-  	}
-
-	/**
-	 * Severes connection to driver, prevents weird bugs
-	 * Will most likely change to deconstructor as it makes more sense given the context of class.
-	 */
-  	void close_connection() {
-		// Close file
-    	close(fd_);
-		// Set file descriptor to a null value
-    	fd_ = -1;
-  	}
-
+	ServoInterface(const char* deviceFile) {
+		fd_ = open(filename, O_WRONLY | O_NOCTTY | O_SYNC);
+		if (fd_ < 0)
+		{
+			throw std::runtime_error("Invalid port!");
+		}
+		struct termios tty;
+		if (tcgetattr(fd_, &tty) != 0) 
+		{
+			throw std::runtime_error("Failed to make termios");
+		}
+		cfsetispeed(&tty, speed);
+		cfsetospeed(&tty, speed);
+	
+		tty.c_cflag = (tty.c_cflag & ~CSIZE) | CS8; // 8-bit characters
+		tty.c_iflag &= ~IGNBRK; // disable break processing
+		tty.c_lflag = 0; // no signaling chars, no echo, no
+						 // canonical processing
+		tty.c_oflag = 0; // no remapping, no delays
+		tty.c_cc[VMIN] = 0; // read doesn't block
+		tty.c_cc[VTIME] = 5; // 0.5 seconds read timeout
+	
+		tty.c_iflag &= ~(IXON | IXOFF | IXANY); // shut off xon/xoff ctrl
+	
+		tty.c_cflag |= (CLOCAL | CREAD); // ignore modem controls,
+								 // enable reading
+		tty.c_cflag &= ~(PARENB | PARODD); // shut off parity
+		tty.c_cflag &= ~CSTOPB;
+		tty.c_cflag &= ~CRTSCTS;
+	
+		if (tcsetattr(fd_, TCSANOW, &tty) != 0) 
+		{
+			throw std::runtime_error("tcsetattr failed!");
+		}
+	}
+	~ServoInterface() {
+		close(fd_);
+	}
+	void write_angle(int data)
+	{
+		std::string s = std::to_string(data);
+		write(fd_, s.c_str(), s.length());
+	}
+	int read_angle()
+	{
+	    const size_t size = sizeof(int);
+		char buffer[size];
+		read(fd, buffer, size);
+		int data = *(int*)buffer;
+		std::cout << data << '\n';
+		return data;
+	}
 private:
-	// Where to write data to in device
-  	int address_;
-	// Device
-  	int fd_;
+	int fd_;
 };
 
 hardware_interface::CallbackReturn SerialController::on_init(const hardware_interface::HardwareInfo &info) {
