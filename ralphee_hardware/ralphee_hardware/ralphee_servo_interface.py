@@ -2,6 +2,11 @@ import serial
 import time
 
 async def init_servos() -> serial.Serial:
+    """
+        Initializes servo arduino serial port.
+        Returns:
+            Serial port of arduino
+    """
     print('[init_servos] create arduino object')
     # Creates arduino object
     arduino = serial.Serial('/dev/ttyACM1', 9600)
@@ -16,5 +21,13 @@ async def init_servos() -> serial.Serial:
     return arduino
 
 async def update_servos(angle: float, arduino: serial.Serial):
+    """
+        Updates angle of servos.
+        Args:
+            angle:
+                Angle that the rover itself is traveling at
+            arduino:
+                Serial connection to servo arduino
+    """
     arduino.write((str(angle) + '\r').encode())
     print(f'[update_servos] t: {angle}')
