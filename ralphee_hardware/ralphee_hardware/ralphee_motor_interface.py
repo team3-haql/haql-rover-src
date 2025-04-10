@@ -59,7 +59,6 @@ async def update_motors(velocity: float, angle: float, controller_groups: list[l
             controller_groups:
                 Controller groups to be set.
     """
-    # Set Velocity
     coroutines = []
 
     # Start coroutines
