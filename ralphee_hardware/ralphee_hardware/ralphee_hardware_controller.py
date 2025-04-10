@@ -1,12 +1,36 @@
 import rclpy
+import math
 import asyncio
 from rclpy.node import Node
 from ralphee_motor_interface import init_motors, update_motors
 from ralphee_servo_interface import init_servos, update_servos
 
-# Twist is deprecated! May need to use TwistStamped
 from geometry_msgs.msg import Twist
 
+WHEEL_BASE = 1.0
+
+# https://gist.github.com/hdh7485/f87b67b237ef57e46fe77962e343c28b
+def convert_trans_rot_vel_to_radius_and_steering_angle(
+    velocity: float, angular_velocity: float, wheelbase: float
+) -> tuple[float, float]:
+    """ 
+        Converts velocity and angular velocity into radius of turn and the steering angle of the turn.
+        Args:
+            velocity:
+                x component of cmd_vel.linear
+            angular_velocity:
+                z comoponent of cmd_vel.angular
+            wheelbase:
+                TODO: Figure out what wheelbase is
+        Returns:
+            (radius, steering_angle) 
+    """
+
+    if angular_velocity == 0 or velocity == 0:
+        return 0
+
+    radius = velocity / angular_velocity
+    return radius, math.atan(wheelbase / radius)
 
 class RalpheeHardwareController(Node):
     """
@@ -38,14 +62,14 @@ class RalpheeHardwareController(Node):
                     Twist object that comes with angle and velocity.
         """
         velocity: float = msg.linear.x
-        angle: float = msg.angular.z
-        self.get_logger().info(f'Velocity: {velocity}, Angle: {angle}')
+        angular_velocity: float = msg.angular.z
+        radius, steering_angle = convert_trans_rot_vel_to_radius_and_steering_angle(velocity, angular_velocity, WHEEL_BASE)
 
         self.get_logger().info(f'Updating motors and servos!')
 
         loop = asyncio.get_event_loop() # Runs async function in non async function!
 
-        tasks = update_motors(velocity, angle, self.motors), update_servos(angle, self.motors)
+        tasks = update_motors(velocity, steering_angle, self.motors), update_servos(steering_angle, self.motors)
         self.motors, self.arduino = loop.run_until_complete(asyncio.gather(*tasks))
 
         loop.close()
