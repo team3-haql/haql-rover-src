@@ -9,14 +9,20 @@ from geometry_msgs.msg import Twist
 
 
 class RalpheeHardwareController(Node):
+    """
+        Class that subscribes to 'cmd_vel' topic, retreives angle and velocity from twist object, and sends it to hardware.
+    """
     def __init__(self):
+        """ 
+            Constructs RalpheeHardwareController class
+        """
         super().__init__('ralphee_hardware_controller')
         self.publisher_ = self.create_subscription(Twist, 'cmd_vel', self.listener_callback, 10)
 
         self.get_logger().info(f'Initializing Hardware!')
 
         loop = asyncio.get_event_loop() # Runs async function in non async function!
-        
+
         tasks = init_motors(), init_servos()
         self.motors, self.arduino = loop.run_until_complete(asyncio.gather(*tasks))
 
@@ -25,6 +31,12 @@ class RalpheeHardwareController(Node):
         self.get_logger().info(f'Initialized Hardware!')
 
     def listener_callback(self, msg: Twist):
+        """
+            Receives velocity and angle and sends it to hardware!
+            Args:
+                msg:
+                    Twist object that comes with angle and velocity.
+        """
         velocity: float = msg.linear.x
         angle: float = msg.angular.z
         self.get_logger().info(f'Velocity: {velocity}, Angle: {angle}')
@@ -41,6 +53,9 @@ class RalpheeHardwareController(Node):
         self.get_logger().info(f'Updated motors and servos!')
 
 def main(args=None):
+    """
+        Spins up server
+    """
     rclpy.init(args=args)
 
     ralphee_hardware_controller = RalpheeHardwareController()
