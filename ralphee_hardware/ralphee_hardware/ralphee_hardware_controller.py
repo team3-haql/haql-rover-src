@@ -13,7 +13,6 @@ TRACK_WIDTH = 1.0
 MAX_ANGLE = 0.75 * math.pi
 MIN_ANGLE = 0.25 * math.pi
 
-# https://gist.github.com/hdh7485/f87b67b237ef57e46fe77962e343c28b
 def convert_trans_rot_vel_to_radius_and_inner_angle(
     velocity: float, angular_velocity: float) -> tuple[float, float]:
     """ 
@@ -32,6 +31,7 @@ def convert_trans_rot_vel_to_radius_and_inner_angle(
     if angular_velocity == 0 or velocity == 0:
         return 0
 
+    # Velocity is absolute since the sign of radius is used to determine which side of the rover its on.
     radius = abs(velocity) / angular_velocity
     return radius, math.atan(WHEEL_BASE / (radius - TRACK_WIDTH/2))
 
