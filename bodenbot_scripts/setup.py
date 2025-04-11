@@ -32,13 +32,8 @@ setup(
     entry_points={
         'console_scripts': [
             'loader = bodenbot_scripts.loader:main',
-            'mock_battery = bodenbot_scripts.mock_battery:main',
-            'motor_driver = bodenbot_scripts.motor_driver:main',
             'docking_server = bodenbot_scripts.docking_server:main',
-            'calibrate_striaght = bodenbot_scripts.calibrate_straight:main',
-            'calibrate_box = bodenbot_scripts.calibrate_box:main',
             'gps_wpf = bodenbot_scripts.gps_wpf:main',
-            'waypoint_recorder = bodenbot_scripts.waypoint_recorder:main',
             'demo_auto = bodenbot_scripts.demo_auto:main',
         ],
     },
