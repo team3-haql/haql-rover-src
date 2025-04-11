@@ -32,7 +32,7 @@ def convert_trans_rot_vel_to_radius_and_inner_angle(
     if angular_velocity == 0 or velocity == 0:
         return 0
 
-    radius = velocity / angular_velocity
+    radius = abs(velocity) / angular_velocity
     return radius, math.atan(WHEEL_BASE / (radius - TRACK_WIDTH/2))
 
 def inverse_lerp_angle(angle: float) -> float:
@@ -41,7 +41,7 @@ def inverse_lerp_angle(angle: float) -> float:
     """
     global MIN_ANGLE
     global MAX_ANGLE
-    
+
     clamped_angle = max(min(angle, MAX_ANGLE), MIN_ANGLE)
     return (2.0*(clamped_angle - MIN_ANGLE)/(MAX_ANGLE - MIN_ANGLE)) - 1.0
 
