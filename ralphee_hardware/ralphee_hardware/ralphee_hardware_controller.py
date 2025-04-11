@@ -8,11 +8,14 @@ from ralphee_servo_interface import init_servos, update_servos
 from geometry_msgs.msg import Twist
 
 WHEEL_BASE = 1.0
+TRACK_WIDTH = 1.0
+
+MAX_ANGLE = 0.75 * math.pi
+MIN_ANGLE = 0.25 * math.pi
 
 # https://gist.github.com/hdh7485/f87b67b237ef57e46fe77962e343c28b
-def convert_trans_rot_vel_to_radius_and_steering_angle(
-    velocity: float, angular_velocity: float, wheelbase: float
-) -> tuple[float, float]:
+def convert_trans_rot_vel_to_radius_and_inner_angle(
+    velocity: float, angular_velocity: float) -> tuple[float, float]:
     """ 
         Converts velocity and angular velocity into radius of turn and the steering angle of the turn.
         Args:
@@ -20,17 +23,27 @@ def convert_trans_rot_vel_to_radius_and_steering_angle(
                 x component of cmd_vel.linear
             angular_velocity:
                 z comoponent of cmd_vel.angular
-            wheelbase:
-                TODO: Figure out what wheelbase is
         Returns:
             (radius, steering_angle) 
     """
+    global WHEEL_BASE
+    global TRACK_WIDTH
 
     if angular_velocity == 0 or velocity == 0:
         return 0
 
     radius = velocity / angular_velocity
-    return radius, math.atan(wheelbase / radius)
+    return radius, math.atan(WHEEL_BASE / (radius - TRACK_WIDTH/2))
+
+def inverse_lerp_angle(angle: float) -> float:
+    """
+        Translates angle to angle between -1 and 1
+    """
+    global MIN_ANGLE
+    global MAX_ANGLE
+    
+    clamped_angle = max(min(angle, MAX_ANGLE), MIN_ANGLE)
+    return (2.0*(clamped_angle - MIN_ANGLE)/(MAX_ANGLE - MIN_ANGLE)) - 1.0
 
 class RalpheeHardwareController(Node):
     """
@@ -63,13 +76,18 @@ class RalpheeHardwareController(Node):
         """
         velocity: float = msg.linear.x
         angular_velocity: float = msg.angular.z
-        radius, steering_angle = convert_trans_rot_vel_to_radius_and_steering_angle(velocity, angular_velocity, WHEEL_BASE)
+        radius, inner_angle = convert_trans_rot_vel_to_radius_and_inner_angle(velocity, angular_velocity)
+
+        inner_angle_n1_to_1 = inverse_lerp_angle(inner_angle)
 
         self.get_logger().info(f'Updating motors and servos!')
 
         loop = asyncio.get_event_loop() # Runs async function in non async function!
 
-        tasks = update_motors(velocity, steering_angle, self.motors), update_servos(steering_angle, self.motors)
+        tasks = (
+            update_motors(velocity, inner_angle_n1_to_1, radius, self.motors), 
+            update_servos(inner_angle_n1_to_1, self.motors)
+        )
         self.motors, self.arduino = loop.run_until_complete(asyncio.gather(*tasks))
 
         loop.close()

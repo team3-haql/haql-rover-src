@@ -2,11 +2,16 @@ import moteus
 import time
 import math
 import usb
+import numpy as np
+from types import any
 
 # Can bus id
 # Visit mjbots moteus repo for more info: https://github.com/mjbots/moteus
 LEFT_MOTOR_IDS = [3, 4, 5]
 RIGHT_MOTOR_IDS = [0, 1, 2]
+
+LEFT_RADIUS_DIFF = 1.0
+RIGHT_RADIUS_DIFF = 1.0
 
 async def init_motors() -> list[list[moteus.Controller]]:
     """
@@ -48,24 +53,35 @@ async def init_motors() -> list[list[moteus.Controller]]:
     # Return groups
     return [left_controllers, right_controllers]
 
-async def update_motors(velocity: float, angle: float, controller_groups: list[list[moteus.Controller]]):
+async def update_motors(velocity: float, radius: float, controller_groups: list[list[moteus.Controller]]):
     """
         Updates motor velocities.
         Args:
             velocity:
                 Speed that the rover itself will travel at.
-            angle:
-                Angle that the rover is moving at.
+            radius:
+                length from turning point to center of body
             controller_groups:
                 Controller groups to be set.
     """
     coroutines = []
 
+    # Gets the radius for left and right wheels
+    left_radius = abs(radius + LEFT_RADIUS_DIFF)
+    right_radius = abs(radius - RIGHT_RADIUS_DIFF)
+
+    # Gets the velocity for both sides.
+    left_velocity = velocity*abs(left_radius / radius)
+    right_velocity = -velocity*abs(right_radius / radius)
+
+    LEFT_SIDE_INDEX = 0
+    RIGHT_SIDE_INDEX = 1
+
     # Start coroutines
-    for c in controller_groups[0]:
-        coroutines.append(c.set_position(position=math.nan, velocity=velocity, query=True, watchdog_timeout=1.0))
-    for c in controller_groups[1]:
-        coroutines.append(c.set_position(position=math.nan, velocity=(-velocity), query=True, watchdog_timeout=1.0))
+    for c in controller_groups[LEFT_SIDE_INDEX]:
+        coroutines.append(c.set_position(position=math.nan, velocity=left_velocity, query=True, watchdog_timeout=1.0))
+    for c in controller_groups[RIGHT_SIDE_INDEX]:
+        coroutines.append(c.set_position(position=math.nan, velocity=right_velocity, query=True, watchdog_timeout=1.0))
     print(f'[update_motors] v: {velocity}')
 
     # Await coroutines
