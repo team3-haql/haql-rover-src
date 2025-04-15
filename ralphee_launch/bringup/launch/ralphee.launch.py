@@ -171,27 +171,6 @@ def get_navigation_nodes(
     ]
 
 
-def get_webots_nodes(use_sim_time, start_webots):
-    webots_cmd = IncludeLaunchDescription(
-        PythonLaunchDescriptionSource(
-            PathJoinSubstitution(
-                [
-                    FindPackageShare('webots_dev'),
-                    'launch',
-                    'robot_launch.py',
-                ]
-            ),
-        ),
-        launch_arguments={
-            'use_sim_time': use_sim_time,
-            'autostart': 'True',
-        }.items(),
-        condition=IfCondition(start_webots),
-    )
-
-    return [webots_cmd]
-
-
 def generate_launch_description():
     declared_arguments = []
 
@@ -249,15 +228,6 @@ def generate_launch_description():
         )
     )
 
-    start_webots = LaunchConfiguration('start_webots')
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            'start_webots',
-            default_value='False',
-            description='Run in Webots',
-        )
-    )
-
     start_docking_server = LaunchConfiguration('start_docking_server')
     declared_arguments.append(
         DeclareLaunchArgument(
@@ -273,10 +243,9 @@ def generate_launch_description():
     navigation_nodes = get_navigation_nodes(
         use_sim_time, start_navigation, start_traverse_layer, start_docking_server
     )
-    webots_nodes = get_webots_nodes(use_sim_time, start_webots)
 
     # Create the launch description and populate
     return LaunchDescription(
-        declared_arguments + controller_nodes + navigation_nodes + webots_nodes
+        declared_arguments + controller_nodes + navigation_nodes
     )
 
