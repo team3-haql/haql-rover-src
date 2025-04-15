@@ -24,104 +24,14 @@ from nav2_common.launch import RewrittenYaml
 def get_controller_nodes(
     use_mock_hardware, debug_hardware, use_sim_time, start_controller_node
 ):
-    # load URDF via xacro
-    # robot_description_content = Command(
-    #     [
-    #         PathJoinSubstitution([FindExecutable(name='xacro')]),
-    #         ' ',
-    #         PathJoinSubstitution(
-    #             [
-    #                 FindPackageShare('bodenbot'),
-    #                 'urdf',
-    #                 'bodenbot.urdf.xacro',
-    #             ]
-    #         ),
-    #         ' ',
-    #         'use_mock_hardware:=',
-    #         use_mock_hardware,
-    #         ' ',
-    #         'debug:=',
-    #         debug_hardware,
-    #     ]
-    # )
-    # robot_description = {'robot_description': robot_description_content}
-
-    # robot_controllers = PathJoinSubstitution(
-    #     [
-    #         FindPackageShare('bodenbot'),
-    #         'config',
-    #         'controllers.yml',
-    #     ]
-    # )
-
+    # GPS Config
     nmea_config = PathJoinSubstitution(
         [
-            FindPackageShare('bodenbot'),
+            FindPackageShare('ralphee_launch'),
             'config',
             'nmea_config.yml',
         ]
     )
-
-    camera_config = PathJoinSubstitution(
-        [
-            FindPackageShare('bodenbot'),
-            'config',
-            'camera_config.yml',
-        ]
-    )
-
-    # Start hardware
-    ralphee_hardware_node = Node(
-        package='ralphee_hardware',
-        executable='hardware_controller'
-    )
-
-    # # Main component of the hardware interface
-    # control_node = Node(
-    #     package='controller_manager',
-    #     executable='ros2_control_node',
-    #     parameters=[robot_controllers],
-    #     output='both',
-    #     remappings=[
-    #         ('~/robot_description', '/robot_description'),
-    #         ('/bodenbot_controller/cmd_vel_unstamped', '/cmd_vel'),
-    #     ],
-    #     prefix=['gdb -ex run --args'],
-    #     condition=IfCondition(start_controller_node),
-    # )
-
-    # # For urdf
-    # robot_state_pub_node = Node(
-    #     package='robot_state_publisher',
-    #     executable='robot_state_publisher',
-    #     output='both',
-    #     parameters=[robot_description],
-    #     condition=IfCondition(start_controller_node),
-    # )
-
-    # # More urdf stuff
-    # joint_state_broadcaster_spawner = Node(
-    #     package='controller_manager',
-    #     executable='spawner',
-    #     arguments=[
-    #         'joint_state_broadcaster',
-    #         '--controller-manager',
-    #         '/controller_manager',
-    #     ],
-    #     condition=IfCondition(start_controller_node),
-    # )
-
-    # # Manages everything
-    # robot_controller_spawner = Node(
-    #     package='controller_manager',
-    #     executable='spawner',
-    #     arguments=[
-    #         'bodenbot_controller',
-    #         '--controller-manager',
-    #         '/controller_manager',
-    #     ],
-    #     condition=IfCondition(start_controller_node),
-    # )
 
     # GPS
     nmea_driver_node = Node(
@@ -130,6 +40,14 @@ def get_controller_nodes(
         output='screen',
         parameters=[nmea_config],
         condition=UnlessCondition(use_mock_hardware),
+    )
+
+    camera_config = PathJoinSubstitution(
+        [
+            FindPackageShare('ralphee_launch'),
+            'config',
+            'camera_config.yml',
+        ]
     )
 
     # ZED Wrapper node
@@ -145,6 +63,12 @@ def get_controller_nodes(
         condition=UnlessCondition(use_mock_hardware),
     )
 
+    # Start hardware
+    ralphee_hardware_node = Node(
+        package='ralphee_hardware',
+        executable='hardware_controller'
+    )
+
     # Controller nodes
     controller_nodes = [
         ralphee_hardware_node,
@@ -158,7 +82,7 @@ def get_controller_nodes(
 def get_navigation_nodes(
     use_sim_time, start_navigation, start_traverse_layer, start_docking_server
 ):
-    package_dir = get_package_share_directory('bodenbot')
+    package_dir = get_package_share_directory('ralphee_launch')
     traverse_layer = get_package_share_directory('traverse_layer')
     bringup_dir = get_package_share_directory('nav2_bringup')
     params_dir = os.path.join(package_dir, 'config')
