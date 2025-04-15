@@ -25,22 +25,20 @@ def convert_trans_rot_vel_to_radius_and_inner_angle(
         Returns:
             (radius, steering_angle) 
     """
-    global WHEEL_BASE
-    global TRACK_WIDTH
+    global WHEEL_BASE, TRACK_WIDTH
 
     if angular_velocity == 0 or velocity == 0:
         return 0
 
     # Velocity is absolute since the sign of radius is used to determine which side of the rover its on.
-    radius = abs(velocity) / angular_velocity
+    radius = velocity / angular_velocity
     return radius, math.atan(WHEEL_BASE / (radius - TRACK_WIDTH/2))
 
 def inverse_lerp_angle(angle: float) -> float:
     """
         Translates angle to angle between -1 and 1
     """
-    global MIN_ANGLE
-    global MAX_ANGLE
+    global MIN_ANGLE, MAX_ANGLE
 
     clamped_angle = max(min(angle, MAX_ANGLE), MIN_ANGLE)
     return (2.0*(clamped_angle - MIN_ANGLE)/(MAX_ANGLE - MIN_ANGLE)) - 1.0

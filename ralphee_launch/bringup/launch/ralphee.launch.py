@@ -20,6 +20,141 @@ from launch_ros.actions import Node
 from launch_ros.substitutions import FindPackageShare
 from nav2_common.launch import RewrittenYaml
 
+
+def get_controller_nodes(
+    use_mock_hardware, debug_hardware, use_sim_time, start_controller_node
+):
+    # load URDF via xacro
+    # robot_description_content = Command(
+    #     [
+    #         PathJoinSubstitution([FindExecutable(name='xacro')]),
+    #         ' ',
+    #         PathJoinSubstitution(
+    #             [
+    #                 FindPackageShare('bodenbot'),
+    #                 'urdf',
+    #                 'bodenbot.urdf.xacro',
+    #             ]
+    #         ),
+    #         ' ',
+    #         'use_mock_hardware:=',
+    #         use_mock_hardware,
+    #         ' ',
+    #         'debug:=',
+    #         debug_hardware,
+    #     ]
+    # )
+    # robot_description = {'robot_description': robot_description_content}
+
+    # robot_controllers = PathJoinSubstitution(
+    #     [
+    #         FindPackageShare('bodenbot'),
+    #         'config',
+    #         'controllers.yml',
+    #     ]
+    # )
+
+    nmea_config = PathJoinSubstitution(
+        [
+            FindPackageShare('bodenbot'),
+            'config',
+            'nmea_config.yml',
+        ]
+    )
+
+    camera_config = PathJoinSubstitution(
+        [
+            FindPackageShare('bodenbot'),
+            'config',
+            'camera_config.yml',
+        ]
+    )
+
+    # Start hardware
+    ralphee_hardware_node = Node(
+        package='ralphee_hardware',
+        executable='hardware_controller'
+    )
+
+    # # Main component of the hardware interface
+    # control_node = Node(
+    #     package='controller_manager',
+    #     executable='ros2_control_node',
+    #     parameters=[robot_controllers],
+    #     output='both',
+    #     remappings=[
+    #         ('~/robot_description', '/robot_description'),
+    #         ('/bodenbot_controller/cmd_vel_unstamped', '/cmd_vel'),
+    #     ],
+    #     prefix=['gdb -ex run --args'],
+    #     condition=IfCondition(start_controller_node),
+    # )
+
+    # # For urdf
+    # robot_state_pub_node = Node(
+    #     package='robot_state_publisher',
+    #     executable='robot_state_publisher',
+    #     output='both',
+    #     parameters=[robot_description],
+    #     condition=IfCondition(start_controller_node),
+    # )
+
+    # # More urdf stuff
+    # joint_state_broadcaster_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     arguments=[
+    #         'joint_state_broadcaster',
+    #         '--controller-manager',
+    #         '/controller_manager',
+    #     ],
+    #     condition=IfCondition(start_controller_node),
+    # )
+
+    # # Manages everything
+    # robot_controller_spawner = Node(
+    #     package='controller_manager',
+    #     executable='spawner',
+    #     arguments=[
+    #         'bodenbot_controller',
+    #         '--controller-manager',
+    #         '/controller_manager',
+    #     ],
+    #     condition=IfCondition(start_controller_node),
+    # )
+
+    # GPS
+    nmea_driver_node = Node(
+        package='nmea_navsat_driver',
+        executable='nmea_serial_driver',
+        output='screen',
+        parameters=[nmea_config],
+        condition=UnlessCondition(use_mock_hardware),
+    )
+
+    # ZED Wrapper node
+    zed_wrapper_node = Node(
+        package='zed_wrapper',
+        executable='zed_wrapper',
+        name='zed_wrapper',
+        output='screen',
+        # prefix=['xterm -e valgrind --tools=callgrind'],
+        # prefix=['xterm -e gdb -ex run --args'],
+        # prefix=['gdbserver localhost:3000'],
+        parameters=[camera_config],
+        condition=UnlessCondition(use_mock_hardware),
+    )
+
+    # Controller nodes
+    controller_nodes = [
+        ralphee_hardware_node,
+        nmea_driver_node,
+        zed_wrapper_node,
+    ]
+
+    return controller_nodes
+
+
 def get_navigation_nodes(
     use_sim_time, start_navigation, start_traverse_layer, start_docking_server
 ):
@@ -110,3 +245,114 @@ def get_navigation_nodes(
         apriltag,
         docking_server,
     ]
+
+
+def get_webots_nodes(use_sim_time, start_webots):
+    webots_cmd = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            PathJoinSubstitution(
+                [
+                    FindPackageShare('webots_dev'),
+                    'launch',
+                    'robot_launch.py',
+                ]
+            ),
+        ),
+        launch_arguments={
+            'use_sim_time': use_sim_time,
+            'autostart': 'True',
+        }.items(),
+        condition=IfCondition(start_webots),
+    )
+
+    return [webots_cmd]
+
+
+def generate_launch_description():
+    declared_arguments = []
+
+    use_mock_hardware = LaunchConfiguration('use_mock_hardware')
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'use_mock_hardware',
+            default_value='False',
+            description='Run motor controller with mock hardware',
+        )
+    )
+
+    start_controller_node = LaunchConfiguration('start_controller_node')
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'start_controller_node',
+            default_value='True',
+            description='Start controller node',
+        )
+    )
+
+    use_sim_time = LaunchConfiguration('use_sim_time', default='True')
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'use_sim_time',
+            default_value='True',
+            description='Use simulation clock if True',
+        )
+    )
+
+    debug_hardware = LaunchConfiguration('debug_hardware')
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'debug_hardware',
+            default_value='False',
+            description='Print dubugging info for hardware',
+        )
+    )
+
+    start_navigation = LaunchConfiguration('start_navigation')
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'start_navigation',
+            default_value='True',
+            description='Start navigation stack',
+        )
+    )
+
+    start_traverse_layer = LaunchConfiguration('start_traverse_layer')
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'start_traverse_layer',
+            default_value='True',
+            description='Start Traversability Mapping',
+        )
+    )
+
+    start_webots = LaunchConfiguration('start_webots')
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'start_webots',
+            default_value='False',
+            description='Run in Webots',
+        )
+    )
+
+    start_docking_server = LaunchConfiguration('start_docking_server')
+    declared_arguments.append(
+        DeclareLaunchArgument(
+            'start_docking_server',
+            default_value='True',
+            description='Start docking server',
+        )
+    )
+
+    controller_nodes = get_controller_nodes(
+        use_mock_hardware, debug_hardware, use_sim_time, start_controller_node
+    )
+    navigation_nodes = get_navigation_nodes(
+        use_sim_time, start_navigation, start_traverse_layer, start_docking_server
+    )
+    webots_nodes = get_webots_nodes(use_sim_time, start_webots)
+
+    # Create the launch description and populate
+    return LaunchDescription(
+        declared_arguments + controller_nodes + navigation_nodes + webots_nodes
+    )
+

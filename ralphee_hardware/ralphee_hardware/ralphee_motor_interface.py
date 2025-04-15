@@ -3,7 +3,6 @@ import time
 import math
 import usb
 import numpy as np
-from types import any
 
 # Can bus id
 # Visit mjbots moteus repo for more info: https://github.com/mjbots/moteus
