@@ -11,7 +11,10 @@ setup(
             ['resource/' + package_name]),
         ('share/' + package_name, ['package.xml']),
     ],
-    install_requires=['setuptools'],
+    install_requires=[
+        'setuptools',
+        'inputs'
+    ],
     zip_safe=True,
     maintainer='default',
     maintainer_email='103225424+garthable@users.noreply.github.com',
