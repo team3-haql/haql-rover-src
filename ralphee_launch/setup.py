@@ -9,8 +9,8 @@ setup(
     version='0.0.0',
     packages=find_packages(exclude=['test']),
     data_files=[
-        (os.path.join('share', package_name, 'launch'), glob(os.path.join('bringup/launch', '*launch.[pxy][yma]*'))),
-        (os.path.join('share', package_name, 'launch'), glob(os.path.join('bringup/config', '*config.[pxy][yma]*')))
+        (os.path.join('share', package_name, 'launch'), glob(os.path.join('launch', '*'))),
+        (os.path.join('share', package_name, 'config'), glob(os.path.join('config', '*')))
     ],  
     install_requires=['setuptools'],
     zip_safe=True,
