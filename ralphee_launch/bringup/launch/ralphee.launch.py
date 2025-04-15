@@ -21,9 +21,7 @@ from launch_ros.substitutions import FindPackageShare
 from nav2_common.launch import RewrittenYaml
 
 
-def get_controller_nodes(
-    use_mock_hardware, debug_hardware, use_sim_time, start_controller_node
-):
+def get_controller_nodes():
     # GPS Config
     nmea_config = PathJoinSubstitution(
         [
@@ -38,8 +36,7 @@ def get_controller_nodes(
         package='nmea_navsat_driver',
         executable='nmea_serial_driver',
         output='screen',
-        parameters=[nmea_config],
-        condition=UnlessCondition(use_mock_hardware),
+        parameters=[nmea_config]
     )
 
     camera_config = PathJoinSubstitution(
@@ -59,8 +56,7 @@ def get_controller_nodes(
         # prefix=['xterm -e valgrind --tools=callgrind'],
         # prefix=['xterm -e gdb -ex run --args'],
         # prefix=['gdbserver localhost:3000'],
-        parameters=[camera_config],
-        condition=UnlessCondition(use_mock_hardware),
+        parameters=[camera_config]
     )
 
     # Start hardware
@@ -174,39 +170,12 @@ def get_navigation_nodes(
 def generate_launch_description():
     declared_arguments = []
 
-    use_mock_hardware = LaunchConfiguration('use_mock_hardware')
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            'use_mock_hardware',
-            default_value='False',
-            description='Run motor controller with mock hardware',
-        )
-    )
-
-    start_controller_node = LaunchConfiguration('start_controller_node')
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            'start_controller_node',
-            default_value='True',
-            description='Start controller node',
-        )
-    )
-
     use_sim_time = LaunchConfiguration('use_sim_time', default='True')
     declared_arguments.append(
         DeclareLaunchArgument(
             'use_sim_time',
             default_value='True',
             description='Use simulation clock if True',
-        )
-    )
-
-    debug_hardware = LaunchConfiguration('debug_hardware')
-    declared_arguments.append(
-        DeclareLaunchArgument(
-            'debug_hardware',
-            default_value='False',
-            description='Print dubugging info for hardware',
         )
     )
 
@@ -237,9 +206,9 @@ def generate_launch_description():
         )
     )
 
-    controller_nodes = get_controller_nodes(
-        use_mock_hardware, debug_hardware, use_sim_time, start_controller_node
-    )
+    # Controls hardware
+    controller_nodes = get_controller_nodes()
+    # Calculates navigation
     navigation_nodes = get_navigation_nodes(
         use_sim_time, start_navigation, start_traverse_layer, start_docking_server
     )
