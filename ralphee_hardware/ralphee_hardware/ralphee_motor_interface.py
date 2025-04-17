@@ -32,7 +32,7 @@ def get_motor_radiuses(radius: float) -> np.ndarray[float]:
 
     for i, motor_coord in enumerate(MOTOR_COORDS):
         p = ROVER_CENTER - motor_coord
-        sum_sq = np.dot(p.T, p)
+        sum_sq = np.dot(p, p)
         radiuses[i] = np.sqrt(sum_sq)
 
     return radiuses
