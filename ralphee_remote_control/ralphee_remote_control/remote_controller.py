@@ -18,7 +18,7 @@ class Actions(IntEnum):
 ACTIVATION_CODE = [Actions.A, Actions.X, Actions.Y, Actions.B]
 SIN_PI_OVER_4 = math.sin(math.pi/4)
 DEADZONE = 0.05
-DEADZONE_INV = 1-DEADZONE
+DEADZONE_INV = 1.0-DEADZONE
 
 MAX_SPEEDS = [2, 3]
 
@@ -47,14 +47,6 @@ class Controller(object):
         self.X = 0
         self.Y = 0
         self.B = 0
-        self.LeftThumb = 0
-        self.RightThumb = 0
-        self.Back = 0
-        self.Start = 0
-        self.LeftDPad = 0
-        self.RightDPad = 0
-        self.UpDPad = 0
-        self.DownDPad = 0
 
         self._monitor_thread = threading.Thread(target=self._monitor_controller, args=())
         self._monitor_thread.daemon = True
@@ -94,22 +86,6 @@ class Controller(object):
                     self.X = event.state #previously switched with Y
                 elif event.code == 'BTN_EAST':
                     self.B = event.state
-                elif event.code == 'BTN_THUMBL':
-                    self.LeftThumb = event.state
-                elif event.code == 'BTN_THUMBR':
-                    self.RightThumb = event.state
-                elif event.code == 'BTN_SELECT':
-                    self.Back = event.state
-                elif event.code == 'BTN_START':
-                    self.Start = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY1':
-                    self.LeftDPad = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY2':
-                    self.RightDPad = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY3':
-                    self.UpDPad = event.state
-                elif event.code == 'BTN_TRIGGER_HAPPY4':
-                    self.DownDPad = event.state
 
             self.update_state()
             if self.state == ControllerState.ENABLED:
@@ -186,3 +162,4 @@ class Controller(object):
         elif self.UpDPad == 1:
             print('UP')
             # self.max_speed_index = 4
+

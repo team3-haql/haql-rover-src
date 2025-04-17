@@ -4,13 +4,38 @@ import math
 import usb
 import numpy as np
 
-# Can bus id
-# Visit mjbots moteus repo for more info: https://github.com/mjbots/moteus
-LEFT_MOTOR_IDS = [3, 4, 5]
-RIGHT_MOTOR_IDS = [0, 1, 2]
+# Can bus id, bisit mjbots moteus repo for more info: https://github.com/mjbots/moteus
+# center motor id should be in center.
+LEFT_MOTOR_IDS  = [0, 5, 1]
+RIGHT_MOTOR_IDS = [2, 4, 3]
 
-LEFT_RADIUS_DIFF = 1.0
-RIGHT_RADIUS_DIFF = 1.0
+# [0] = Left Non Center
+# [1] = Left Center
+# [2] = Right Non Center
+# [3] = Right Center
+MOTOR_COORDS = np.array([[0.3556,-0.3048], [0.0,-0.3048],  # Left Side
+                         [0.3556, 0.3048], [0.0, 0.3048]]) # Right Side
+
+def get_motor_radiuses(radius: float) -> np.ndarray[float]:
+    """
+        Gets radius to each motor, used velocity calculation
+        Args:
+            radius:
+                Radius from center over rover to turn point
+        Return:
+            Array of radius to each motor
+    """
+    global MOTOR_COORDS
+
+    ROVER_CENTER = np.array([radius,0.0])
+    radiuses = np.empty(6, dtype=float)
+
+    for i, motor_coord in enumerate(MOTOR_COORDS):
+        p = ROVER_CENTER - motor_coord
+        sum_sq = np.dot(p.T, p)
+        radiuses[i] = np.sqrt(sum_sq)
+
+    return radiuses
 
 async def init_motors() -> list[list[moteus.Controller]]:
     """
@@ -65,22 +90,26 @@ async def update_motors(velocity: float, radius: float, controller_groups: list[
     """
     coroutines = []
 
-    # Gets the radius for left and right wheels
-    left_radius = abs(radius + LEFT_RADIUS_DIFF)
-    right_radius = abs(radius - RIGHT_RADIUS_DIFF)
+    radiuses = get_motor_radiuses(radius) / radius
 
     # Gets the velocity for both sides.
-    left_velocity = velocity*abs(left_radius / radius)
-    right_velocity = -velocity*abs(right_radius / radius)
+    left_velocity         =  velocity*abs(radiuses[0])
+    left_center_velocity  =  velocity*abs(radiuses[1])
+    right_velocity        = -velocity*abs(radiuses[2])
+    right_center_velocity = -velocity*abs(radiuses[3])
 
-    LEFT_SIDE_INDEX = 0
+    LEFT_SIDE_INDEX  = 0
     RIGHT_SIDE_INDEX = 1
 
     # Start coroutines
-    for c in controller_groups[LEFT_SIDE_INDEX]:
-        coroutines.append(c.set_position(position=math.nan, velocity=left_velocity, query=True, watchdog_timeout=1.0))
-    for c in controller_groups[RIGHT_SIDE_INDEX]:
-        coroutines.append(c.set_position(position=math.nan, velocity=right_velocity, query=True, watchdog_timeout=1.0))
+    for i, c in enumerate(controller_groups[LEFT_SIDE_INDEX]):
+        v = left_velocity if i != 1 else left_center_velocity
+        coroutines.append(c.set_position(position=math.nan, velocity=v, query=True, watchdog_timeout=1.0))
+
+    for i, c in enumerate(controller_groups[RIGHT_SIDE_INDEX]):
+        v = right_velocity if i != 1 else right_center_velocity
+        coroutines.append(c.set_position(position=math.nan, velocity=v, query=True, watchdog_timeout=1.0))
+
     print(f'[update_motors] v: {velocity}')
 
     # Await coroutines

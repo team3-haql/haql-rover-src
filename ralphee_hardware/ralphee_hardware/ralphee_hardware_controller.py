@@ -2,8 +2,8 @@ import rclpy
 import math
 import asyncio
 from rclpy.node import Node
-from ralphee_motor_interface import init_motors, update_motors
-from ralphee_servo_interface import init_servos, update_servos
+from ralphee_hardware.ralphee_motor_interface import init_motors, update_motors
+from ralphee_hardware.ralphee_servo_interface import init_servos, update_servos
 
 from geometry_msgs.msg import Twist
 

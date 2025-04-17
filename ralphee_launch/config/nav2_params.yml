@@ -78,13 +78,13 @@ controller_server:
       transform_tolerance: 0.1
       temperature: 0.3
       gamma: 0.015
-      motion_model: "Ackermann"
+      motion_model: "Ackermann" # Ackermann steering
       visualize: false
       TrajectoryVisualizer:
         trajectory_step: 5
         time_step: 3
       AckermannConstraints:
-        min_turning_r: 0.2
+        min_turning_r: 0.6096 # 2 feet, source: "Looks like its min turning r is 2 feet"
       critics: ["ConstraintCritic", "CostCritic", "GoalCritic", "GoalAngleCritic", "PathAlignCritic", "PathFollowCritic", "PathAngleCritic", "PreferForwardCritic"]
       ConstraintCritic:
         enabled: true
@@ -212,7 +212,8 @@ global_costmap:
       publish_frequency: 1.0
       global_frame: map
       robot_base_frame: base_link
-      footprint: "[[ 0.41, 0.38], [ 0.41, -0.38], [-0.57, -0.38], [-0.57, 0.38]]"
+      # X goes from left wheel to right wheel
+      footprint: "[[ 0.3556, 0.381], [ -0.3556, 0.381], [0.3556, -0.635], [-0.3556, -0.635]]"
       footprint_padding: 0.15
       # When using GPS navigation you will potentially traverse huge environments which are not practical to
       # fit on a big static costmap. Thus it is recommended to use a rolling global costmap large enough to 

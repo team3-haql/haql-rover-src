@@ -1,0 +1,27 @@
+# Mac DS_Store file
+**/.DS_Store
+
+# Ros2
+build
+install
+log
+
+# Zig
+*zig_compiler*
+*zig-cache*
+*zig-out*
+*zig-linux*
+*zig-linux-x86_64-0.14.0-dev.2063+5ce17ecfa*
+*zig-linux-aarch64-0.14.0-dev.2647+5322459a0*
+
+# VSCode
+*.vscode*
+
+# Binary Files
+*.o
+*.a
+*.pyc
+
+# Python
+*.python-version*
+*__pycache__*

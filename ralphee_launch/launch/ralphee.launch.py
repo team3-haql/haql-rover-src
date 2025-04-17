@@ -47,17 +47,17 @@ def get_controller_nodes():
         ]
     )
 
-    # ZED Wrapper node
-    zed_wrapper_node = Node(
-        package='zed_wrapper',
-        executable='zed_wrapper',
-        name='zed_wrapper',
-        output='screen',
-        # prefix=['xterm -e valgrind --tools=callgrind'],
-        # prefix=['xterm -e gdb -ex run --args'],
-        # prefix=['gdbserver localhost:3000'],
-        parameters=[camera_config]
-    )
+    # # ZED Wrapper node
+    # zed_wrapper_node = Node(
+    #     package='zed_wrapper',
+    #     executable='zed_wrapper',
+    #     name='zed_wrapper',
+    #     output='screen',
+    #     # prefix=['xterm -e valgrind --tools=callgrind'],
+    #     # prefix=['xterm -e gdb -ex run --args'],
+    #     # prefix=['gdbserver localhost:3000'],
+    #     parameters=[camera_config]
+    # )
 
     # Start hardware
     ralphee_hardware_node = Node(
@@ -69,7 +69,7 @@ def get_controller_nodes():
     controller_nodes = [
         ralphee_hardware_node,
         nmea_driver_node,
-        zed_wrapper_node,
+        # zed_wrapper_node,
     ]
 
     return controller_nodes
