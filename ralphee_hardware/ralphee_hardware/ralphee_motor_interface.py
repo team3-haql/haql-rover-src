@@ -6,15 +6,15 @@ import numpy as np
 
 # Can bus id, bisit mjbots moteus repo for more info: https://github.com/mjbots/moteus
 # center motor id should be in center.
-LEFT_MOTOR_IDS  = [0, 5, 1]
-RIGHT_MOTOR_IDS = [2, 4, 3]
+LEFT_MOTOR_IDS  = [0, 5, 2]
+RIGHT_MOTOR_IDS = [1, 4, 3]
 
 # [0] = Left Non Center
 # [1] = Left Center
 # [2] = Right Non Center
 # [3] = Right Center
-MOTOR_COORDS = np.array([[0.3556,-0.3048], [0.0,-0.3048],  # Left Side
-                         [0.3556, 0.3048], [0.0, 0.3048]]) # Right Side
+MOTOR_COORDS = np.array([[-0.3048,0.3556], [-0.3048,0.0],  # Left Side
+                         [ 0.3048,0.3556], [ 0.3048,0.0]]) # Right Side
 
 def get_motor_radiuses(radius: float) -> np.ndarray[float]:
     """
