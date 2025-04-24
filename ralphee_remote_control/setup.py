@@ -23,6 +23,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'remote_control=ralphee_remote_control.remote_control_publisher:main'
         ],
     },
 )

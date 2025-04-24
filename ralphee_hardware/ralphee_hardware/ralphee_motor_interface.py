@@ -96,6 +96,8 @@ async def update_motors(velocity: float, radius: float, controller_groups: list[
         radiuses = get_motor_radiuses(radius) / radius
     else:
         radiuses = np.ones(4)
+    if velocity > 1:
+        velocity = 1
 
     # Gets the velocity for both sides.
     left_velocity         =  velocity*abs(radiuses[0])
