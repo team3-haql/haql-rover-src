@@ -1,30 +1,47 @@
 import rclpy
 from rclpy.node import Node
+from ralphee_remote_control.remote_controller import Controller
 
-from std_msgs.msg import Float
+from std_msgs.msg import Float64MultiArray, Int16
 
 
 class ControllerPublisher(Node):
 
     def __init__(self):
         super().__init__('controller_publisher')
-        self.publisher_ = self.create_publisher(String, 'topic', 10)
-        timer_period = 0.5  # seconds
+        self.cmd_vel_pub = self.create_publisher(Float64MultiArray, 'angle_vel_controller', 10)
+        self.state_pub = self.create_publisher(Int16, 'state', 10)
+        timer_period = 0.1  # seconds
         self.timer = self.create_timer(timer_period, self.timer_callback)
-        self.i = 0
+        self.controller = Controller()
 
     def timer_callback(self):
-        msg = String()
-        msg.data = 'Hello World: %d' % self.i
-        self.publisher_.publish(msg)
-        self.get_logger().info('Publishing: "%s"' % msg.data)
-        self.i += 1
+        vel_angle_msg = Float64MultiArray()
+        state_msg = Int16()
+
+        vel = self.controller.velocity
+        angle = self.controller.angle
+
+        vel_angle_msg.data.append(vel)
+        vel_angle_msg.data.append(angle)
+
+        x = self.controller.X # auto
+        y = self.controller.Y # controller
+
+        if x == 1:
+            state_msg.data = 1 # State change to controller
+            self.state_pub.publish(state_msg)
+        if y == 1:
+            state_msg.data = 2 # State change to nav2
+            self.state_pub.publish(state_msg)
+
+        self.cmd_vel_pub.publish(vel_angle_msg)
 
 
 def main(args=None):
     rclpy.init(args=args)
 
-    minimal_publisher = MinimalPublisher()
+    minimal_publisher = ControllerPublisher()
 
     rclpy.spin(minimal_publisher)
 

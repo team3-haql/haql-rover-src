@@ -6,8 +6,10 @@ import numpy as np
 
 # Can bus id, bisit mjbots moteus repo for more info: https://github.com/mjbots/moteus
 # center motor id should be in center.
-LEFT_MOTOR_IDS  = [0, 5, 2]
-RIGHT_MOTOR_IDS = [1, 4, 3]
+# 1 5 3
+# 0 3
+LEFT_MOTOR_IDS  = [2, 5, 3]
+RIGHT_MOTOR_IDS = [0, 4, 1]
 
 # [0] = Left Non Center
 # [1] = Left Center
@@ -49,7 +51,7 @@ async def init_motors() -> list[list[moteus.Controller]]:
     # Without this step the program will get stuck at 'set_stop' on repeat runs.
     dev = usb.core.find(idVendor=0x0483, idProduct=0x5740)
     if dev is None:
-        raise ValueError('Device not found')
+        raise Exception('[init_motors] plug in motors!')
 
     dev.reset()
 
@@ -79,7 +81,7 @@ async def init_motors() -> list[list[moteus.Controller]]:
 
 async def update_motors(velocity: float, radius: float, controller_groups: list[list[moteus.Controller]]):
     """
-        Updates motor velocities.
+        Updates motor velocities. https://www.desmos.com/calculator/pwxu4jlu2f
         Args:
             velocity:
                 Speed that the rover itself will travel at.
@@ -90,7 +92,10 @@ async def update_motors(velocity: float, radius: float, controller_groups: list[
     """
     coroutines = []
 
-    radiuses = get_motor_radiuses(radius) / radius
+    if math.isfinite(radius):
+        radiuses = get_motor_radiuses(radius) / radius
+    else:
+        radiuses = np.ones(4)
 
     # Gets the velocity for both sides.
     left_velocity         =  velocity*abs(radiuses[0])
@@ -104,13 +109,13 @@ async def update_motors(velocity: float, radius: float, controller_groups: list[
     # Start coroutines
     for i, c in enumerate(controller_groups[LEFT_SIDE_INDEX]):
         v = left_velocity if i != 1 else left_center_velocity
-        coroutines.append(c.set_position(position=math.nan, velocity=v, query=True, watchdog_timeout=1.0))
+        coroutines.append(c.set_position(position=math.nan, velocity=v, query=True, watchdog_timeout=10.0))
 
     for i, c in enumerate(controller_groups[RIGHT_SIDE_INDEX]):
         v = right_velocity if i != 1 else right_center_velocity
-        coroutines.append(c.set_position(position=math.nan, velocity=v, query=True, watchdog_timeout=1.0))
+        coroutines.append(c.set_position(position=math.nan, velocity=v, query=True, watchdog_timeout=10.0))
 
-    print(f'[update_motors] v: {velocity}')
+    # print(f'[update_motors] lv: {left_velocity}, lcv: {left_center_velocity}, rv: {right_velocity}, rcv: {right_center_velocity}')
 
     # Await coroutines
     for coroutine in coroutines:

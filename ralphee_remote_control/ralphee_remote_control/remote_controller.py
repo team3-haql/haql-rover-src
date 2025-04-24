@@ -68,6 +68,7 @@ class Controller(object):
                 os.system("sudo shutdown") 
             self.update_velocity()  
             self.update_angle()
+            sleep(0.1)
 
     def update_inputs(self, events):
         for event in events:
